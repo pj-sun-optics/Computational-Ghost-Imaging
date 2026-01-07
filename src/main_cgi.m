@@ -70,6 +70,7 @@ Weights = B - B_mean;
 
 % Weighted sum of patterns
 Img_flat = P_flat * Weights;
+Img_flat = Img_flat / M;
 
 % Reshape back to 2D image
 Img_recon = reshape(Img_flat, [N, N]);

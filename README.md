@@ -1,37 +1,72 @@
-# Computational-Ghost-Imaging
 # Computational Ghost Imaging (CGI) Simulation
 
-A MATLAB implementation of **Computational Ghost Imaging (CGI)** using the **Differential Ghost Imaging (DGI)** algorithm.
+MATLAB implementation of **Computational Ghost Imaging (CGI)** with a refactored, modular pipeline and a more robust **Differential Ghost Imaging (DGI)** reconstruction.
 
-This project simulates the single-pixel imaging process, demonstrating how an image can be reconstructed from a series of random speckle patterns and bucket detector intensity values without spatial resolution.
+## What Was Improved
 
-## 1. Mathematical Principle
+- Code reorganized from one script into modular functions.
+- Default resolution upgraded from **64x64** to **128x128**.
+- Reconstruction upgraded to a normalized DGI form:
+  - Uses bucket signal \(B_i\), reference arm \(R_i=\sum P_i\), and random patterns \(P_i\).
+  - Applies \(G(x,y)=\langle(B_i-\alpha R_i)(P_i(x,y)-\langle P(x,y)\rangle)\rangle\), \(\alpha=\langle B\rangle/\langle R\rangle\).
+- Acquisition and reconstruction now run in **streaming batches** (two-pass with fixed RNG seed), avoiding storage of large 3D pattern arrays.
+- Added mild enhancement (sharpen + percentile stretch) for finer visual detail.
+- Output now includes:
+  - High-resolution comparison figure
+  - Reconstruction-only image
+  - `.mat` data file with configuration and metrics
 
-The reconstruction is based on the correlation between the bucket detector signal $B_i$ and the illumination patterns $P_i(x,y)$. 
+## Project Structure
 
-The traditional GI correlation formula is:
+```text
+src/
+  main_cgi.m                    % Entry script
+  cgi_default_config.m          % Central parameter configuration
+  run_cgi.m                     % Pipeline orchestration
+  load_object_image.m           % Image loading and normalization
+  simulate_measurements.m       % Streaming measurement simulation
+  reconstruct_dgi_streaming.m   % Streaming DGI reconstruction
+  enhance_reconstruction.m      % Post-reconstruction enhancement
+  normalize01.m                 % Utility normalization
+  compute_metrics.m             % PSNR/MAE/NCC metrics
+  save_results_and_figure.m     % Save figure/image/data
 
-$$G(x,y) = \langle B \cdot P(x,y) \rangle - \langle B \rangle \langle P(x,y) \rangle$$
+results/
+  cgi_result.png
+  cgi_reconstruction.png
+  cgi_result.mat
+```
 
-In this simulation, we generate $M$ random binary patterns. The bucket signal $B_i$ for the $i$-th measurement is:
+## Usage
 
-$$B_i = \iint P_i(x,y) \cdot T(x,y) dx dy$$
+1. Open MATLAB in this repository root.
+2. Run:
+   ```matlab
+   run('src/main_cgi.m')
+   ```
+3. Adjust parameters in `src/cgi_default_config.m`.
 
-Where $T(x,y)$ is the transmission function of the object.
+## Recommended Parameter Presets
 
-## 2. Simulation Results
+- Fast preview:
+  - `cfg.N = 96;`
+  - `cfg.M_ratio = 3;`
+  - `cfg.batch_size = 512;`
 
-- **Object Resolution**: 64 x 64 pixels
-- **Sampling Ratio**: 5x (Total 20,480 measurements)
+- Higher-quality reconstruction:
+  - `cfg.N = 128;`
+  - `cfg.M_ratio = 6;`
+  - `cfg.batch_size = 512;`
 
-![CGI Result](results/cgi_result.png)
-*(Left: Ground Truth; Right: Reconstructed Image using DGI)*
+- Even finer details (slower):
+  - `cfg.N = 160;`
+  - `cfg.M_ratio = 8;`
+  - `cfg.batch_size = 256;`
 
-## 3. Usage
+## Notes
 
-1. Clone the repository.
-2. Run `src/main_cgi.m` in MATLAB.
-3. Adjust `M_ratio` in the code to see how sampling rate affects image quality.
+- Runtime and memory both grow rapidly with `N` and `M_ratio`.
+- Streaming mode keeps memory usage stable compared with storing `N x N x M` patterns.
 
 ---
-*Keywords: Single-pixel Imaging, Compressed Sensing, Inverse Problems, MATLAB*
+Keywords: Single-Pixel Imaging, Ghost Imaging, Differential GI, Inverse Problems, MATLAB

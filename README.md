@@ -20,13 +20,12 @@ G(x,y)=\left\langle\left(B_i-\alpha R_i\right)\left(P_i(x,y)-\left\langle P(x,y)
 R_i=\sum_{x,y} P_i(x,y)
 $$
 
-Plain-text fallback:
-`G(x,y)=<(B_i-alpha*R_i)*(P_i(x,y)-<P(x,y)>)>, alpha=<B>/<R>, R_i=sum(P_i)`
+
 
 ## Simulation Result
 
 ![CGI Result](results/cgi_result.png)
-*Left: Ground Truth, Middle: Raw DGI, Right: Refined Reconstruction*
+*Left: Ground Truth, Right: Refined Reconstruction*
 
 ## What Was Improved
 

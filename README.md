@@ -2,13 +2,37 @@
 
 MATLAB implementation of **Computational Ghost Imaging (CGI)** with a refactored, modular pipeline and a more robust **Differential Ghost Imaging (DGI)** reconstruction.
 
+## Mathematical Principle
+
+The object transmission is denoted as $T(x,y)$ and the $i$-th random illumination pattern is $P_i(x,y)$.
+
+The bucket detector signal is:
+
+$$
+B_i = \iint P_i(x,y)\,T(x,y)\,dx\,dy
+$$
+
+For normalized DGI reconstruction:
+
+$$
+G(x,y)=\left\langle\left(B_i-\alpha R_i\right)\left(P_i(x,y)-\left\langle P(x,y)\right\rangle\right)\right\rangle,\quad
+\alpha=\frac{\langle B\rangle}{\langle R\rangle},\quad
+R_i=\sum_{x,y} P_i(x,y)
+$$
+
+Plain-text fallback:
+`G(x,y)=<(B_i-alpha*R_i)*(P_i(x,y)-<P(x,y)>)>, alpha=<B>/<R>, R_i=sum(P_i)`
+
+## Simulation Result
+
+![CGI Result](results/cgi_result.png)
+*Left: Ground Truth, Middle: Raw DGI, Right: Refined Reconstruction*
+
 ## What Was Improved
 
 - Code reorganized from one script into modular functions.
 - Default resolution upgraded from **64x64** to **128x128**.
-- Reconstruction upgraded to a normalized DGI form:
-  - Uses bucket signal \(B_i\), reference arm \(R_i=\sum P_i\), and random patterns \(P_i\).
-  - Applies \(G(x,y)=\langle(B_i-\alpha R_i)(P_i(x,y)-\langle P(x,y)\rangle)\rangle\), \(\alpha=\langle B\rangle/\langle R\rangle\).
+- Reconstruction upgraded to a normalized DGI form with reference-arm normalization.
 - Acquisition and reconstruction now run in **streaming batches** (two-pass with fixed RNG seed), avoiding storage of large 3D pattern arrays.
 - Added mild enhancement (sharpen + percentile stretch) for finer visual detail.
 - Output now includes:

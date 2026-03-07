@@ -24,7 +24,7 @@ $$
 
 ## Simulation Result
 
-![CGI Result](results/cgi_result.)
+![CGI Result](results/cgi_result.png)
 *Left: Ground Truth, Middle: Raw DGI, Right: Refined Reconstruction*
 
 ## Script Logic

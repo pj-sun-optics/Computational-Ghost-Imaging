@@ -68,7 +68,7 @@ results/
 
 - Better quality:
   - `N = 256;`
-  - `cfg.M_ratio = 8;`
+  - `M_ratio = 8;`
   - `batch_size = 64;`
 
 - Slower but finer:

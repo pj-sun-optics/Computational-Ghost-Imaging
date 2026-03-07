@@ -1,12 +1,18 @@
-function img_recon = reconstruct_dgi_streaming(B, R, N, cfg)
+function img_recon = reconstruct_dgi_streaming(B, R, image_size, cfg)
 %RECONSTRUCT_DGI_STREAMING Streaming two-pass DGI reconstruction.
 %
 % Formula (discrete form):
 %   G(x,y) = < (B_i - alpha * R_i) * (P_i(x,y) - <P(x,y)>) >
 % where alpha = <B>/<R>.
 
+if isscalar(image_size)
+    image_size = [image_size, image_size];
+else
+    image_size = image_size(:).';
+end
+
 M = numel(B);
-N2 = N * N;
+N2 = prod(image_size);
 batch_size = max(1, round(cfg.batch_size));
 num_batches = ceil(M / batch_size);
 
@@ -38,7 +44,7 @@ for batch_idx = 1:num_batches
 end
 
 img_flat = (acc - pattern_sum * (sum_weights / M)) / M;
-img_recon = reshape(img_flat, [N, N]);
+img_recon = reshape(img_flat, image_size);
 end
 
 function tf = should_print_progress(cfg, batch_idx, num_batches)

@@ -1,8 +1,12 @@
-function img_out = enhance_reconstruction(img_in, sigma, amount)
+function img_out = enhance_reconstruction(img_in, sigma, amount, enable_adaptive_equalization)
 %ENHANCE_RECONSTRUCTION Apply mild edge-preserving enhancement.
 
 sigma = max(sigma, 0.05);
 amount = max(amount, 0);
+
+if nargin < 4
+    enable_adaptive_equalization = false;
+end
 
 radius = max(1, ceil(3 * sigma));
 [x, y] = meshgrid(-radius:radius, -radius:radius);
@@ -13,7 +17,11 @@ smooth_img = conv2(img_in, kernel, 'same');
 sharpened = img_in + amount * (img_in - smooth_img);
 sharpened = normalize01(sharpened);
 
-img_out = stretch_percentile(sharpened, 0.01, 0.99);
+if enable_adaptive_equalization && exist('adapthisteq', 'file') == 2
+    sharpened = adapthisteq(sharpened, 'ClipLimit', 0.015, 'NumTiles', [8, 8]);
+end
+
+img_out = stretch_percentile(sharpened, 0.005, 0.995);
 img_out = normalize01(img_out);
 end
 

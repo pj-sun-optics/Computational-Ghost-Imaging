@@ -25,15 +25,16 @@ $$
 ## Simulation Result
 
 ![CGI Result](results/cgi_result.png)
-*Left: Ground Truth, Right: Refined Reconstruction*
+*Left: Ground Truth, Middle: Raw DGI, Right: Refined Reconstruction*
 
 ## What Was Improved
 
 - Code reorganized from one script into modular functions.
-- Default resolution upgraded from **64x64** to **128x128**.
+- Default reconstruction upgraded to **1080x1920** output with tiled CGI.
 - Reconstruction upgraded to a normalized DGI form with reference-arm normalization.
 - Acquisition and reconstruction now run in **streaming batches** (two-pass with fixed RNG seed), avoiding storage of large 3D pattern arrays.
-- Added mild enhancement (sharpen + percentile stretch) for finer visual detail.
+- Large images are reconstructed tile by tile so the code can target megapixel-scale outputs without storing full-frame random pattern volumes.
+- Added stronger post-processing enhancement for finer visual detail.
 - Output now includes:
   - High-resolution comparison figure
   - Reconstruction-only image
@@ -49,6 +50,7 @@ src/
   load_object_image.m           % Image loading and normalization
   simulate_measurements.m       % Streaming measurement simulation
   reconstruct_dgi_streaming.m   % Streaming DGI reconstruction
+  reconstruct_tiled_cgi.m       % Tiled megapixel reconstruction
   enhance_reconstruction.m      % Post-reconstruction enhancement
   normalize01.m                 % Utility normalization
   compute_metrics.m             % PSNR/MAE/NCC metrics
@@ -72,24 +74,30 @@ results/
 ## Recommended Parameter Presets
 
 - Fast preview:
-  - `cfg.N = 96;`
-  - `cfg.M_ratio = 3;`
-  - `cfg.batch_size = 512;`
-
-- Higher-quality reconstruction:
-  - `cfg.N = 128;`
+  - `cfg.image_size = [256, 256];`
+  - `cfg.acquisition_mode = 'single';`
   - `cfg.M_ratio = 6;`
-  - `cfg.batch_size = 512;`
-
-- Even finer details (slower):
-  - `cfg.N = 160;`
-  - `cfg.M_ratio = 8;`
   - `cfg.batch_size = 256;`
+
+- High-quality square reconstruction:
+  - `cfg.image_size = [512, 512];`
+  - `cfg.acquisition_mode = 'tiled';`
+  - `cfg.tile_size = [64, 64];`
+  - `cfg.M_ratio = 8;`
+
+- 1080p large-scale reconstruction:
+  - `cfg.image_size = [1080, 1920];`
+  - `cfg.acquisition_mode = 'tiled';`
+  - `cfg.tile_size = [48, 48];`
+  - `cfg.tile_overlap = [8, 8];`
+  - `cfg.M_ratio = 10;`
+  - `cfg.min_measurements_per_tile = 12000;`
 
 ## Notes
 
-- Runtime and memory both grow rapidly with `N` and `M_ratio`.
-- Streaming mode keeps memory usage stable compared with storing `N x N x M` patterns.
+- Direct full-frame random-pattern DGI at 1080p is computationally prohibitive.
+- The tiled mode trades global full-frame sampling for block-wise reconstruction, which is much more practical for megapixel outputs.
+- Runtime still grows rapidly with image size, tile size, and `M_ratio`.
 
 ---
 Keywords: Single-Pixel Imaging, Ghost Imaging, Differential GI, Inverse Problems, MATLAB

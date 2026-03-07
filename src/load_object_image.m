@@ -7,6 +7,12 @@ if ndims(img) == 3
 end
 
 img = im2double(img);
-img = imresize(img, [target_size, target_size], 'bicubic');
+if isscalar(target_size)
+    resize_shape = [target_size, target_size];
+else
+    resize_shape = target_size(:).';
+end
+
+img = imresize(img, resize_shape, 'bicubic');
 img_obj = normalize01(img);
 end

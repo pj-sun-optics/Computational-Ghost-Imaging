@@ -1,6 +1,6 @@
 # Computational Ghost Imaging (CGI) Simulation
 
-MATLAB implementation of **Computational Ghost Imaging (CGI)** with a refactored, modular pipeline and a more robust **Differential Ghost Imaging (DGI)** reconstruction.
+MATLAB implementation of **Computational Ghost Imaging (CGI)** using a **single self-contained script**. The goal is to keep the physical process and reconstruction logic easy to read from top to bottom in one file.
 
 ## Mathematical Principle
 
@@ -27,34 +27,22 @@ $$
 ![CGI Result](results/cgi_result.png)
 *Left: Ground Truth, Middle: Raw DGI, Right: Refined Reconstruction*
 
-## What Was Improved
+## Script Logic
 
-- Code reorganized from one script into modular functions.
-- Default reconstruction upgraded to **1080x1920** output with tiled CGI.
-- Reconstruction upgraded to a normalized DGI form with reference-arm normalization.
-- Acquisition and reconstruction now run in **streaming batches** (two-pass with fixed RNG seed), avoiding storage of large 3D pattern arrays.
-- Large images are reconstructed tile by tile so the code can target megapixel-scale outputs without storing full-frame random pattern volumes.
-- Added stronger post-processing enhancement for finer visual detail.
-- Output now includes:
-  - High-resolution comparison figure
-  - Reconstruction-only image
-  - `.mat` data file with configuration and metrics
+Everything is written in [src/main_cgi.m](src/main_cgi.m), in this order:
+
+1. Set imaging parameters.
+2. Load and normalize the object.
+3. Simulate random-pattern illumination and bucket detection.
+4. Reconstruct the image using Differential Ghost Imaging.
+5. Apply mild display enhancement.
+6. Save the figure, reconstructed image, and `.mat` data.
 
 ## Project Structure
 
 ```text
 src/
-  main_cgi.m                    % Entry script
-  cgi_default_config.m          % Central parameter configuration
-  run_cgi.m                     % Pipeline orchestration
-  load_object_image.m           % Image loading and normalization
-  simulate_measurements.m       % Streaming measurement simulation
-  reconstruct_dgi_streaming.m   % Streaming DGI reconstruction
-  reconstruct_tiled_cgi.m       % Tiled megapixel reconstruction
-  enhance_reconstruction.m      % Post-reconstruction enhancement
-  normalize01.m                 % Utility normalization
-  compute_metrics.m             % PSNR/MAE/NCC metrics
-  save_results_and_figure.m     % Save figure/image/data
+  main_cgi.m                    % Single-file CGI simulation and reconstruction
 
 results/
   cgi_result.png
@@ -69,35 +57,30 @@ results/
    ```matlab
    run('src/main_cgi.m')
    ```
-3. Adjust parameters in `src/cgi_default_config.m`.
+3. Edit the parameters at the top of `src/main_cgi.m` if needed.
 
 ## Recommended Parameter Presets
 
 - Fast preview:
-  - `cfg.image_size = [256, 256];`
-  - `cfg.acquisition_mode = 'single';`
-  - `cfg.M_ratio = 6;`
-  - `cfg.batch_size = 256;`
+  - `N = 128;`
+  - `M_ratio = 6;`
+  - `batch_size = 64;`
 
-- High-quality square reconstruction:
-  - `cfg.image_size = [512, 512];`
-  - `cfg.acquisition_mode = 'tiled';`
-  - `cfg.tile_size = [64, 64];`
+- Better quality:
+  - `N = 256;`
   - `cfg.M_ratio = 8;`
+  - `batch_size = 64;`
 
-- 1080p large-scale reconstruction:
-  - `cfg.image_size = [1080, 1920];`
-  - `cfg.acquisition_mode = 'tiled';`
-  - `cfg.tile_size = [48, 48];`
-  - `cfg.tile_overlap = [8, 8];`
-  - `cfg.M_ratio = 10;`
-  - `cfg.min_measurements_per_tile = 12000;`
+- Slower but finer:
+  - `N = 384;`
+  - `M_ratio = 10;`
+  - `batch_size = 32;`
 
 ## Notes
 
-- Direct full-frame random-pattern DGI at 1080p is computationally prohibitive.
-- The tiled mode trades global full-frame sampling for block-wise reconstruction, which is much more practical for megapixel outputs.
-- Runtime still grows rapidly with image size, tile size, and `M_ratio`.
+- In standard CGI with random pixel-wise patterns, runtime grows very quickly with `N` and `M_ratio`.
+- For most machines, `N = 256` is a practical starting point.
+- If you directly push to very large resolutions, the simulation can become extremely slow.
 
 ---
 Keywords: Single-Pixel Imaging, Ghost Imaging, Differential GI, Inverse Problems, MATLAB
